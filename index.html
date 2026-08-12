@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>心マトリクス ふりかえり｜いま、どこ？ つぎ、どこへ？</title>
+<meta name="description" content="葛原祥太さんの「心マトリクス」に、いまの心と、つぎに行きたい場所のピンを刺してふりかえるWebツール。ふたりで刺す・できごとを書く・自分のことばで埋める。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="心マトリクス ふりかえり｜いま、どこ？ つぎ、どこへ？">
+<meta property="og:description" content="いまの心と、つぎに行きたい場所にピンを刺す。ふたりで刺してズレを見る。自分のことばで８つの状態を埋める。">
+<meta property="og:url" content="https://mararararai-mst.github.io/kokoro-matrix/">
+<meta property="og:image" content="https://mararararai-mst.github.io/kokoro-matrix/assets/kokoro-matrix.jpeg">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📍</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fdf6ef; --bg2:#fbeee3;
+  --card:#ffffff; --line:#efe3d6;
+  --ink:#41372f; --sub:#8b7d70;
+  --now:#ef6f9b; --next:#3fae87;
+  --pa:#ef6f9b; --pb:#4a90d9;
+  --accent:#f0a45c;
+  --r:18px;
+  --shadow:0 6px 18px rgba(120,90,60,.10);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:"Zen Maru Gothic",system-ui,sans-serif;
+  background:linear-gradient(170deg,var(--bg) 0%,var(--bg2) 100%);
+  color:var(--ink); line-height:1.7;
+  -webkit-text-size-adjust:100%;
+  min-height:100vh;
+}
+body.no-ruby rt{display:none}
+
+header{padding:18px 16px 6px;text-align:center}
+h1{
+  font-size:clamp(1.25rem,4.6vw,1.7rem);font-weight:700;margin:0;
+  letter-spacing:.02em;
+}
+h1 .dot{color:var(--now)}
+.lead{margin:.35em 0 0;font-size:clamp(.8rem,2.9vw,.94rem);color:var(--sub)}
+.creed{
+  display:inline-block;margin:.7em auto 0;padding:.35em 1em;
+  background:#fff;border:2px dashed var(--line);border-radius:999px;
+  font-size:clamp(.75rem,2.7vw,.85rem);color:var(--sub);
+}
+
+.bar{
+  display:flex;gap:.4em;justify-content:center;align-items:center;
+  flex-wrap:wrap;padding:14px 12px 4px;
+}
+.tab{
+  font-family:inherit;font-size:clamp(.8rem,2.9vw,.92rem);font-weight:700;
+  padding:.5em 1.05em;border-radius:999px;border:2px solid var(--line);
+  background:#fff;color:var(--sub);cursor:pointer;transition:.15s;
+}
+.tab:hover{border-color:var(--accent)}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:var(--shadow)}
+.toggle{
+  font-family:inherit;font-size:.78rem;padding:.42em .9em;border-radius:999px;
+  border:2px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;
+}
+.toggle[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+
+main{
+  max-width:1080px;margin:0 auto;padding:8px 14px 28px;
+  display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);
+  gap:18px;align-items:start;
+}
+@media (max-width:820px){ main{grid-template-columns:1fr} }
+
+.stage{background:var(--card);border-radius:var(--r);padding:10px;box-shadow:var(--shadow)}
+#mx{width:100%;height:auto;display:block;touch-action:none;cursor:crosshair;border-radius:12px}
+.hint{
+  text-align:center;font-size:clamp(.8rem,2.9vw,.92rem);font-weight:500;
+  padding:.55em .6em .2em;color:var(--sub);min-height:2.6em;
+}
+.hint b{color:var(--ink)}
+
+.panel{display:flex;flex-direction:column;gap:12px}
+.card{
+  background:var(--card);border-radius:var(--r);padding:14px 15px;
+  box-shadow:var(--shadow);border-left:8px solid var(--line);
+}
+.card.now{border-left-color:var(--now)}
+.card.next{border-left-color:var(--next)}
+.card.pa{border-left-color:var(--pa)}
+.card.pb{border-left-color:var(--pb)}
+.card .who{
+  display:flex;align-items:center;gap:.45em;font-size:.8rem;font-weight:700;color:var(--sub);
+}
+.chip{width:.85em;height:.85em;border-radius:50%;display:inline-block;background:var(--sub)}
+.card.now .chip{background:var(--now)} .card.next .chip{background:var(--next)}
+.card.pa .chip{background:var(--pa)} .card.pb .chip{background:var(--pb)}
+.stname{font-size:clamp(1.05rem,3.8vw,1.25rem);font-weight:700;margin:.1em 0 .05em}
+.stdesc{font-size:.86rem;color:var(--sub);margin:0}
+.mine{
+  background:#fff8ee;border:1px solid #f3e0c7;border-radius:12px;
+  padding:.5em .7em;margin:.5em 0 0;font-size:.88rem;
+}
+.mine .tag{font-size:.68rem;font-weight:700;color:var(--accent);display:block}
+.empty{color:#bcb0a4}
+
+label.f{display:block;font-size:.78rem;font-weight:700;color:var(--sub);margin:.75em 0 .25em}
+input[type=text]{
+  width:100%;font-family:inherit;font-size:.95rem;color:var(--ink);
+  padding:.55em .7em;border:2px solid var(--line);border-radius:12px;background:#fffdfa;
+}
+input[type=text]:focus{outline:none;border-color:var(--accent)}
+input[type=text]::placeholder{color:#c9bcae}
+.name-in{max-width:9em;display:inline-block;font-weight:700;padding:.25em .5em;font-size:.85rem}
+
+.step{
+  background:#fff;border-radius:var(--r);box-shadow:var(--shadow);
+  padding:12px 15px;border-left:8px solid var(--accent);
+}
+.step .f{margin-top:0}
+
+.acts{display:flex;flex-wrap:wrap;gap:.5em;justify-content:center;padding-top:2px}
+.btn{
+  font-family:inherit;font-size:.86rem;font-weight:700;cursor:pointer;
+  padding:.6em 1.1em;border-radius:999px;border:2px solid var(--line);
+  background:#fff;color:var(--sub);transition:.15s;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.06);color:#fff}
+
+.words-grid{display:grid;gap:.55em}
+.words-row{display:grid;grid-template-columns:6.4em 1fr;gap:.5em;align-items:center}
+.words-row .nm{font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:.4em}
+
+footer{
+  text-align:center;padding:6px 16px 30px;font-size:.74rem;color:var(--sub);line-height:1.9;
+}
+footer a{color:var(--sub)}
+.toast{
+  position:fixed;left:50%;bottom:22px;transform:translate(-50%,14px);
+  background:var(--ink);color:#fff;padding:.6em 1.2em;border-radius:999px;
+  font-size:.85rem;opacity:0;pointer-events:none;transition:.25s;z-index:50;
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span class="dot">📍</span> <ruby>心<rt>こころ</rt></ruby>マトリクス ふりかえり</h1>
+  <p class="lead">いま、どこ？ そして、つぎはどこへ行きたい？</p>
+  <span class="creed">わるい<ruby>場所<rt>ばしょ</rt></ruby>は ひとつもない。いまどこにいるか わかればいい。</span>
+</header>
+
+<div class="bar" role="tablist">
+  <button class="tab" role="tab" id="tab-solo"  aria-selected="true"  data-mode="solo">ふりかえり</button>
+  <button class="tab" role="tab" id="tab-pair"  aria-selected="false" data-mode="pair">ふたりで</button>
+  <button class="tab" role="tab" id="tab-words" aria-selected="false" data-mode="words">わたしのことば</button>
+  <button class="toggle" id="rubyBtn" aria-pressed="true">ふりがな</button>
+</div>
+
+<main>
+  <section class="stage">
+    <svg id="mx" viewBox="0 0 886 886" aria-label="心マトリクス">
+      <image href="assets/kokoro-matrix.jpeg" x="0" y="0" width="886" height="886"/>
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#3fae87"/>
+        </marker>
+      </defs>
+      <path id="arrow" fill="none" stroke="#3fae87" stroke-width="7" stroke-dasharray="16 12"
+            stroke-linecap="round" marker-end="url(#ah)" opacity="0"/>
+      <g id="pins"></g>
+    </svg>
+    <div class="hint" id="hint"></div>
+  </section>
+
+  <section class="panel">
+    <!-- ふりかえり -->
+    <div id="p-solo">
+      <div class="card now" id="c-now">
+        <div class="who"><span class="chip"></span>いまの<ruby>心<rt>こころ</rt></ruby></div>
+        <p class="stname empty" data-name>まだ さしてないよ</p>
+        <p class="stdesc" data-desc>図をタップして、いまの心の場所にピンをさそう。</p>
+        <div data-mine></div>
+        <label class="f" for="ev-now">なにがあって、そうなった？</label>
+        <input type="text" id="ev-now" placeholder="れい：さんすうのテストがむずかしかった">
+      </div>
+
+      <div class="card next" id="c-next">
+        <div class="who"><span class="chip"></span>つぎ 行きたいところ</div>
+        <p class="stname empty" data-name>まだ さしてないよ</p>
+        <p class="stdesc" data-desc>「いま」をさしたら、つぎに行きたい場所をさそう。</p>
+        <div data-mine></div>
+      </div>
+
+      <div class="step">
+        <label class="f" for="ev-step">つぎに行くために、まず やること</label>
+        <input type="text" id="ev-step" placeholder="れい：わからんとこを１つだけ聞いてみる">
+      </div>
+    </div>
+
+    <!-- ふたりで -->
+    <div id="p-pair" class="hidden">
+      <div class="card pa" id="c-a">
+        <div class="who"><span class="chip"></span>
+          <input type="text" class="name-in" id="nm-a" value="ぼく" maxlength="6" aria-label="ひとりめの名前">
+          の いま
+        </div>
+        <p class="stname empty" data-name>まだ さしてないよ</p>
+        <p class="stdesc" data-desc>ふたりとも、自分で自分の心をさそう。</p>
+        <div data-mine></div>
+        <label class="f" for="ev-a">なにがあって、そうなった？</label>
+        <input type="text" id="ev-a" placeholder="れい：サッカーでゴールきめた">
+      </div>
+
+      <div class="card pb" id="c-b">
+        <div class="who"><span class="chip"></span>
+          <input type="text" class="name-in" id="nm-b" value="おとうさん" maxlength="6" aria-label="ふたりめの名前">
+          の いま
+        </div>
+        <p class="stname empty" data-name>まだ さしてないよ</p>
+        <p class="stdesc" data-desc>あいての心を きめつけないで、じぶんの心をさす。</p>
+        <div data-mine></div>
+        <label class="f" for="ev-b">なにがあって、そうなった？</label>
+        <input type="text" id="ev-b" placeholder="れい：しごとが立てこんでいた">
+      </div>
+    </div>
+
+    <!-- わたしのことば -->
+    <div id="p-words" class="hidden">
+      <div class="card">
+        <div class="who"><span class="chip" style="background:var(--accent)"></span>わたしのことばで うめる</div>
+        <p class="stdesc" style="margin:.3em 0 .8em">
+          「きらきらって どんなとき？」を じぶんのことばで書いておくと、ピンをさしたときに その言葉が出てくるよ。
+        </p>
+        <div class="words-grid" id="wordsGrid"></div>
+      </div>
+    </div>
+
+    <div class="acts">
+      <button class="btn" id="btnReset">さいしょから</button>
+      <button class="btn" id="btnCopy">コピー</button>
+      <button class="btn primary" id="btnSave">画像でほぞん</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  図：葛原祥太「心マトリクス」（<a href="https://ketebure.com/" target="_blank" rel="noopener">葛原学習研究所</a>）<br>
+  書いた言葉は この端末の中だけに残ります。どこにも送られません。
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ===== 状態の定義（原図の８方向） ===== */
+var W=886, C=443, MAXR=395;
+var STATES=[
+  {key:'nikoniko',a:0,   name:'にこにこ', color:'#EF9A4E', desc:'「しんじる」×「おもいやる」。あったかい心。まわりまで明るくなる。'},
+  {key:'kirakira',a:45,  name:'きらきら', color:'#D9A400', desc:'「やってみる」×「おもいやる」。考えて動けてる。かがやいてるね。'},
+  {key:'gungun',  a:90,  name:'ぐんぐん', color:'#3F9CD0', desc:'「考える」×「やってみる」。学びがどんどん すすむゾーン。'},
+  {key:'iraira',  a:135, name:'いらいら', color:'#E8544E', desc:'動きたいのに「自分ばかり」に かたむき中。ふーっと 息をはこう。'},
+  {key:'moyamoya',a:180, name:'もやもや', color:'#7D5A4F', desc:'「うたがう」×「自分ばかり」。すっきりしない。なにが いやか ことばにしてみよう。'},
+  {key:'dorodoro',a:-135,name:'どろどろ', color:'#7E57C2', desc:'心が うずまいている。ひとりで かかえこまないで、話してみよう。'},
+  {key:'daradara',a:-90, name:'だらだら', color:'#8D8D8D', desc:'「考えない」×「やらされる」。エンジンが 止まっている。小さな一歩から。'},
+  {key:'fuwafuwa',a:-45, name:'ふわふわ', color:'#43A047', desc:'気もちいいけど、ながされぎみ。その楽しさを 学びに つなげよう。'}
+];
+var CENTER={key:'center',name:'まんなか',color:'#4E9E7E',desc:'心は いつも動くもの。ここから どっちへ 動く？'};
+
+function stateAt(x,y){
+  var dx=x-C, dy=-(y-C), d=Math.sqrt(dx*dx+dy*dy);
+  if(d<90) return CENTER;
+  var deg=Math.atan2(dy,dx)*180/Math.PI, best=STATES[0], bd=1e9;
+  for(var i=0;i<STATES.length;i++){
+    var diff=Math.abs(((deg-STATES[i].a+540)%360)-180);
+    if(diff<bd){ bd=diff; best=STATES[i]; }
+  }
+  return best;
+}
+
+/* ===== 保存（この端末だけ） ===== */
+var LS_WORDS='kokoro-matrix-words-v1', LS_NAMES='kokoro-matrix-names-v1', LS_RUBY='kokoro-matrix-ruby-v1';
+function load(k,def){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){ return def; } }
+function save(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+var myWords=load(LS_WORDS,{});
+var myNames=load(LS_NAMES,{a:'ぼく',b:'おとうさん'});
+
+/* ===== ピン ===== */
+var PINS={
+  now: {id:'now', label:'いま', color:'#EF6F9B', card:'c-now', placed:false, x:0, y:0},
+  next:{id:'next',label:'つぎ', color:'#3FAE87', card:'c-next',placed:false, x:0, y:0},
+  a:   {id:'a',   label:myNames.a, color:'#EF6F9B', card:'c-a', placed:false, x:0, y:0},
+  b:   {id:'b',   label:myNames.b, color:'#4A90D9', card:'c-b', placed:false, x:0, y:0}
+};
+var MODE_PINS={ solo:['now','next'], pair:['a','b'], words:[] };
+var mode='solo';
+
+var svg=document.getElementById('mx');
+var gPins=document.getElementById('pins');
+var arrow=document.getElementById('arrow');
+var hint=document.getElementById('hint');
+var SVGNS='http://www.w3.org/2000/svg';
+
+function el(n,attrs){
+  var e=document.createElementNS(SVGNS,n);
+  for(var k in attrs) e.setAttribute(k,attrs[k]);
+  return e;
+}
+function buildPin(p){
+  var g=el('g',{id:'pin-'+p.id,opacity:'0'});
+  g.appendChild(el('path',{d:'M0 0 C-26 -40 -30 -66 0 -78 C30 -66 26 -40 0 0 Z',fill:p.color,stroke:'#fff','stroke-width':'6','stroke-linejoin':'round'}));
+  g.appendChild(el('circle',{cx:'0',cy:'-52',r:'13',fill:'#fff'}));
+  var rect=el('rect',{x:'-52',y:'-130',width:'104',height:'42',rx:'21',fill:p.color,stroke:'#fff','stroke-width':'5'});
+  g.appendChild(rect);
+  var t=el('text',{x:'0',y:'-101','text-anchor':'middle','font-size':'27','font-weight':'700',fill:'#fff','font-family':'"Zen Maru Gothic",sans-serif'});
+  t.textContent=p.label;
+  g.appendChild(t);
+  p.el=g; p.textEl=t; p.rectEl=rect;
+  gPins.appendChild(g);
+}
+Object.keys(PINS).forEach(function(k){ buildPin(PINS[k]); });
+
+function setPinLabel(p,label){
+  p.label=label||' ';
+  p.textEl.textContent=p.label;
+  var w=Math.max(84, p.label.length*29+34);
+  p.rectEl.setAttribute('x', String(-w/2));
+  p.rectEl.setAttribute('width', String(w));
+}
+
+function drawPins(){
+  Object.keys(PINS).forEach(function(k){
+    var p=PINS[k], on=(MODE_PINS[mode].indexOf(k)>=0) && p.placed;
+    p.el.setAttribute('opacity', on?'1':'0');
+    if(on) p.el.setAttribute('transform','translate('+p.x+' '+p.y+')');
+  });
+  var showArrow=(mode==='solo' && PINS.now.placed && PINS.next.placed);
+  if(showArrow){
+    var x1=PINS.now.x, y1=PINS.now.y, x2=PINS.next.x, y2=PINS.next.y;
+    var dx=x2-x1, dy=y2-y1, len=Math.sqrt(dx*dx+dy*dy);
+    if(len<24){ arrow.setAttribute('opacity','0'); }
+    else{
+      var ux=dx/len, uy=dy/len, cut=Math.min(22,len/3);
+      arrow.setAttribute('d','M'+(x1+ux*cut)+' '+(y1+uy*cut)+' L'+(x2-ux*cut)+' '+(y2-uy*cut));
+      arrow.setAttribute('opacity','.95');
+    }
+  } else arrow.setAttribute('opacity','0');
+}
+
+/* ===== 表示の更新 ===== */
+function fillCard(pinKey){
+  var p=PINS[pinKey], card=document.getElementById(p.card);
+  if(!card) return;
+  var nameEl=card.querySelector('[data-name]'), descEl=card.querySelector('[data-desc]'), mineEl=card.querySelector('[data-mine]');
+  if(!p.placed){ return; }
+  var st=stateAt(p.x,p.y);
+  nameEl.textContent=st.name;
+  nameEl.classList.remove('empty');
+  nameEl.style.color=st.color;
+  descEl.textContent=st.desc;
+  var mine=myWords[st.key];
+  if(mine && mine.trim()){
+    mineEl.innerHTML='<div class="mine"><span class="tag">わたしのことば</span>'+esc(mine)+'</div>';
+  } else mineEl.innerHTML='';
+}
+function esc(s){ return String(s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+function updateHint(){
+  if(mode==='words'){ hint.innerHTML='８つの場所を じぶんのことばで うめてみよう。'; return; }
+  var keys=MODE_PINS[mode];
+  var k=nextTarget();
+  if(mode==='solo'){
+    if(k==='now') hint.innerHTML='まず <b>いまの心</b> の場所を タップ。';
+    else if(k==='next') hint.innerHTML='つぎは <b>行きたい場所</b> を タップ。';
+    else hint.innerHTML='ピンは あとから ドラッグで 動かせるよ。';
+  }else{
+    if(k==='a') hint.innerHTML='<b>'+esc(PINS.a.label)+'</b> が じぶんの心を タップ。';
+    else if(k==='b') hint.innerHTML='つぎは <b>'+esc(PINS.b.label)+'</b> の ばん。';
+    else hint.innerHTML='ふたりの ズレを 見ながら 話してみよう。';
+  }
+}
+function nextTarget(){
+  var keys=MODE_PINS[mode];
+  for(var i=0;i<keys.length;i++){ if(!PINS[keys[i]].placed) return keys[i]; }
+  return null;
+}
+
+/* ===== 操作 ===== */
+var dragKey=null;
+function toView(e){
+  var r=svg.getBoundingClientRect();
+  var x=(e.clientX-r.left)/r.width*W, y=(e.clientY-r.top)/r.height*W;
+  var dx=x-C, dy=y-C, d=Math.sqrt(dx*dx+dy*dy);
+  if(d>MAXR){ x=C+dx/d*MAXR; y=C+dy/d*MAXR; }
+  if(y<150) y=150;
+  if(y>836) y=836;
+  return {x:x,y:y};
+}
+function nearestPin(x,y){
+  var keys=MODE_PINS[mode], best=null, bd=1e9;
+  for(var i=0;i<keys.length;i++){
+    var p=PINS[keys[i]];
+    if(!p.placed) continue;
+    var d=Math.hypot(p.x-x,p.y-y);
+    if(d<bd){ bd=d; best=keys[i]; }
+  }
+  return best;
+}
+svg.addEventListener('pointerdown',function(e){
+  if(MODE_PINS[mode].length===0) return;
+  var v=toView(e);
+  dragKey=nextTarget() || nearestPin(v.x,v.y);
+  if(!dragKey) return;
+  try{ if(svg.setPointerCapture) svg.setPointerCapture(e.pointerId); }catch(err){}
+  var p=PINS[dragKey]; p.x=v.x; p.y=v.y; p.placed=true;
+  drawPins(); fillCard(dragKey);
+  e.preventDefault();
+});
+svg.addEventListener('pointermove',function(e){
+  if(!dragKey) return;
+  var v=toView(e), p=PINS[dragKey];
+  p.x=v.x; p.y=v.y;
+  drawPins(); fillCard(dragKey);
+});
+function endDrag(){
+  if(!dragKey) return;
+  dragKey=null;
+  updateHint();
+}
+svg.addEventListener('pointerup',endDrag);
+svg.addEventListener('pointercancel',endDrag);
+window.addEventListener('pointerup',endDrag);
+
+/* ===== モード切替 ===== */
+var panels={solo:document.getElementById('p-solo'),pair:document.getElementById('p-pair'),words:document.getElementById('p-words')};
+function setMode(m){
+  mode=m;
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(t){
+    t.setAttribute('aria-selected', String(t.dataset.mode===m));
+  });
+  for(var k in panels) panels[k].classList.toggle('hidden', k!==m);
+  svg.style.cursor = (m==='words') ? 'default' : 'crosshair';
+  drawPins(); updateHint();
+}
+Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(t){
+  t.addEventListener('click',function(){ setMode(t.dataset.mode); });
+});
+
+/* ===== ふりがな ===== */
+var rubyBtn=document.getElementById('rubyBtn');
+var rubyOn=load(LS_RUBY,true);
+function applyRuby(){
+  document.body.classList.toggle('no-ruby', !rubyOn);
+  rubyBtn.setAttribute('aria-pressed', String(rubyOn));
+}
+rubyBtn.addEventListener('click',function(){ rubyOn=!rubyOn; save(LS_RUBY,rubyOn); applyRuby(); });
+applyRuby();
+
+/* ===== 名前 ===== */
+function bindName(inputId,pinKey,storeKey){
+  var inp=document.getElementById(inputId);
+  inp.value=myNames[storeKey];
+  setPinLabel(PINS[pinKey],inp.value);
+  inp.addEventListener('input',function(){
+    var v=inp.value.trim()||'？';
+    myNames[storeKey]=inp.value;
+    save(LS_NAMES,myNames);
+    setPinLabel(PINS[pinKey],v);
+    updateHint();
+  });
+}
+bindName('nm-a','a','a');
+bindName('nm-b','b','b');
+
+/* ===== わたしのことば ===== */
+var grid=document.getElementById('wordsGrid');
+STATES.concat([CENTER]).forEach(function(st){
+  var row=document.createElement('div'); row.className='words-row';
+  var nm=document.createElement('div'); nm.className='nm';
+  nm.innerHTML='<span class="chip" style="background:'+st.color+'"></span>'+st.name;
+  var inp=document.createElement('input');
+  inp.type='text'; inp.placeholder='どんなとき？';
+  inp.value=myWords[st.key]||'';
+  inp.addEventListener('input',function(){
+    myWords[st.key]=inp.value; save(LS_WORDS,myWords);
+    MODE_PINS.solo.concat(MODE_PINS.pair).forEach(function(k){ if(PINS[k].placed) fillCard(k); });
+  });
+  row.appendChild(nm); row.appendChild(inp); grid.appendChild(row);
+});
+
+/* ===== さいしょから ===== */
+document.getElementById('btnReset').addEventListener('click',function(){
+  var keys=(mode==='words')?['now','next','a','b']:MODE_PINS[mode];
+  keys.forEach(function(k){
+    PINS[k].placed=false;
+    var card=document.getElementById(PINS[k].card);
+    if(card){
+      var n=card.querySelector('[data-name]'), d=card.querySelector('[data-desc]'), m=card.querySelector('[data-mine]');
+      n.textContent='まだ さしてないよ'; n.classList.add('empty'); n.style.color='';
+      d.textContent=(k==='now')?'図をタップして、いまの心の場所にピンをさそう。'
+                  :(k==='next')?'「いま」をさしたら、つぎに行きたい場所をさそう。'
+                  :(k==='a')?'ふたりとも、自分で自分の心をさそう。'
+                  :'あいての心を きめつけないで、じぶんの心をさす。';
+      m.innerHTML='';
+    }
+  });
+  ['ev-now','ev-step','ev-a','ev-b'].forEach(function(id){
+    var e=document.getElementById(id);
+    if(e && (mode==='words' || isFieldOfMode(id))) e.value='';
+  });
+  drawPins(); updateHint(); toast('まっさらに もどしたよ');
+});
+function isFieldOfMode(id){
+  if(mode==='solo') return id==='ev-now'||id==='ev-step';
+  if(mode==='pair') return id==='ev-a'||id==='ev-b';
+  return false;
+}
+
+/* ===== 画像で保存 / コピー ===== */
+function textLines(){
+  var out=[];
+  if(mode==='pair'){
+    [['a','ev-a'],['b','ev-b']].forEach(function(pair){
+      var p=PINS[pair[0]];
+      if(!p.placed) return;
+      var st=stateAt(p.x,p.y);
+      var ev=document.getElementById(pair[1]).value.trim();
+      out.push('● '+p.label+'：'+st.name+(ev?'（'+ev+'）':''));
+    });
+  }else{
+    if(PINS.now.placed){
+      var st1=stateAt(PINS.now.x,PINS.now.y);
+      var ev1=document.getElementById('ev-now').value.trim();
+      out.push('● いま：'+st1.name+(ev1?'（'+ev1+'）':''));
+    }
+    if(PINS.next.placed){
+      var st2=stateAt(PINS.next.x,PINS.next.y);
+      out.push('● つぎ：'+st2.name+' へ');
+    }
+    var stp=document.getElementById('ev-step').value.trim();
+    if(stp) out.push('● まずやること：'+stp);
+  }
+  return out;
+}
+function today(){
+  var d=new Date(), z=function(n){ return (n<10?'0':'')+n; };
+  return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());
+}
+function pinPath(ctx,x,y,color,label){
+  ctx.save(); ctx.translate(x,y);
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.bezierCurveTo(-26,-40,-30,-66,0,-78);
+  ctx.bezierCurveTo(30,-66,26,-40,0,0);
+  ctx.closePath();
+  ctx.fillStyle=color; ctx.strokeStyle='#fff'; ctx.lineWidth=6; ctx.lineJoin='round';
+  ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0,-52,13,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
+  var w=Math.max(84,label.length*29+34), h=42, rx=21, rxx=-w/2, ryy=-130;
+  ctx.beginPath();
+  if(ctx.roundRect) ctx.roundRect(rxx,ryy,w,h,rx);
+  else{
+    ctx.moveTo(rxx+rx,ryy); ctx.lineTo(rxx+w-rx,ryy); ctx.quadraticCurveTo(rxx+w,ryy,rxx+w,ryy+rx);
+    ctx.lineTo(rxx+w,ryy+h-rx); ctx.quadraticCurveTo(rxx+w,ryy+h,rxx+w-rx,ryy+h);
+    ctx.lineTo(rxx+rx,ryy+h); ctx.quadraticCurveTo(rxx,ryy+h,rxx,ryy+h-rx);
+    ctx.lineTo(rxx,ryy+rx); ctx.quadraticCurveTo(rxx,ryy,rxx+rx,ryy);
+  }
+  ctx.fillStyle=color; ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=5; ctx.stroke();
+  ctx.fillStyle='#fff'; ctx.font='700 27px "Zen Maru Gothic", sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(label,0,ryy+h/2+1);
+  ctx.restore();
+}
+function renderCanvas(){
+  return new Promise(function(resolve,reject){
+    var img=new Image();
+    img.onload=function(){
+      var lines=textLines();
+      var head=104, foot=(lines.length?28+lines.length*44:26);
+      var cv=document.createElement('canvas');
+      cv.width=W; cv.height=head+W+foot;
+      var ctx=cv.getContext('2d');
+      ctx.fillStyle='#fdf6ef'; ctx.fillRect(0,0,cv.width,cv.height);
+      ctx.fillStyle='#41372f'; ctx.font='700 40px "Zen Maru Gothic", sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('心マトリクス ふりかえり',W/2,head/2-8);
+      ctx.font='400 24px "Zen Maru Gothic", sans-serif'; ctx.fillStyle='#8b7d70';
+      ctx.fillText(today(),W/2,head/2+28);
+      ctx.drawImage(img,0,head,W,W);
+      if(mode==='solo' && PINS.now.placed && PINS.next.placed){
+        var x1=PINS.now.x,y1=PINS.now.y+head,x2=PINS.next.x,y2=PINS.next.y+head;
+        var dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+        if(len>=24){
+          var ux=dx/len,uy=dy/len,cut=Math.min(22,len/3);
+          ctx.save(); ctx.strokeStyle='#3fae87'; ctx.lineWidth=7; ctx.setLineDash([16,12]); ctx.lineCap='round';
+          ctx.beginPath(); ctx.moveTo(x1+ux*cut,y1+uy*cut); ctx.lineTo(x2-ux*cut,y2-uy*cut); ctx.stroke();
+          ctx.restore();
+        }
+      }
+      MODE_PINS[mode].forEach(function(k){
+        var p=PINS[k];
+        if(p.placed) pinPath(ctx,p.x,p.y+head,p.color,p.label);
+      });
+      ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.font='500 28px "Zen Maru Gothic", sans-serif'; ctx.fillStyle='#41372f';
+      lines.forEach(function(t,i){ ctx.fillText(t,40,head+W+22+i*44); });
+      resolve(cv);
+    };
+    img.onerror=function(){ reject(new Error('image load failed')); };
+    img.src='assets/kokoro-matrix.jpeg';
+  });
+}
+var toastEl=document.getElementById('toast'), toastT=null;
+function toast(msg){
+  toastEl.textContent=msg; toastEl.classList.add('on');
+  clearTimeout(toastT); toastT=setTimeout(function(){ toastEl.classList.remove('on'); },1900);
+}
+document.getElementById('btnSave').addEventListener('click',function(){
+  if(mode==='words'){ toast('「ふりかえり」か「ふたりで」で つかってね'); return; }
+  renderCanvas().then(function(cv){
+    cv.toBlob(function(blob){
+      var a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download='心マトリクス_'+today()+'.png';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(a.href); },3000);
+      toast('画像を ほぞんしたよ');
+    },'image/png');
+  }).catch(function(){ toast('ほぞんできなかった…'); });
+});
+document.getElementById('btnCopy').addEventListener('click',function(){
+  if(mode==='words'){ toast('「ふりかえり」か「ふたりで」で つかってね'); return; }
+  renderCanvas().then(function(cv){
+    cv.toBlob(function(blob){
+      if(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write){
+        navigator.clipboard.write([new ClipboardItem({'image/png':blob})])
+          .then(function(){ toast('画像を コピーしたよ'); })
+          .catch(function(){ copyText(); });
+      } else copyText();
+    },'image/png');
+  }).catch(function(){ copyText(); });
+});
+function copyText(){
+  var t='心マトリクス ふりかえり（'+today()+'）\n'+textLines().join('\n');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(function(){ toast('文字で コピーしたよ'); })
+      .catch(function(){ toast('コピーできなかった…'); });
+  } else toast('コピーできなかった…');
+}
+
+/* ===== 起動 ===== */
+setMode('solo');
+})();
+</script>
+</body>
+</html>
