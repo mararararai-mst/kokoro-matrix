@@ -707,12 +707,12 @@ LABELS.forEach(function(L){
   if(L.v){
     g.appendChild(el('rect',{x:'-26',y:String(-2*LABEL_STEP-6),width:'52',height:String(4*LABEL_STEP+12),rx:'10',fill:'#fff'}));
     for(var i=0;i<t.length;i++){
-      var tv=el('text',{x:'0',y:String((i-1.5)*LABEL_STEP),'text-anchor':'middle','dominant-baseline':'central','font-size':String(LABEL_FS),'font-weight':'700',fill:L.color,stroke:L.color,'stroke-width':'2.5','stroke-linejoin':'round','font-family':'"Zen Maru Gothic",sans-serif'});
+      var tv=el('text',{x:'0',y:String((i-1.5)*LABEL_STEP),'text-anchor':'middle','dominant-baseline':'central','font-size':String(LABEL_FS),'font-weight':'700',fill:L.color,'font-family':'"Zen Maru Gothic",sans-serif'});
       tv.textContent=t.charAt(i); g.appendChild(tv);
     }
   }else{
     g.appendChild(el('rect',{x:'-90',y:'-27',width:'180',height:'54',rx:'10',fill:'#fff'}));
-    var th=el('text',{x:'0',y:'0','text-anchor':'middle','dominant-baseline':'central','font-size':String(LABEL_FS),'font-weight':'700',fill:L.color,stroke:L.color,'stroke-width':'2.5','stroke-linejoin':'round','letter-spacing':'2','font-family':'"Zen Maru Gothic",sans-serif'});
+    var th=el('text',{x:'0',y:'0','text-anchor':'middle','dominant-baseline':'central','font-size':String(LABEL_FS),'font-weight':'700',fill:L.color,'letter-spacing':'2','font-family':'"Zen Maru Gothic",sans-serif'});
     th.textContent=t; g.appendChild(th);
   }
   gKana.appendChild(g);
@@ -728,14 +728,12 @@ function drawKanaCanvas(ctx,oy){
     if(L.v){
       ctx.fillRect(-26,-2*LABEL_STEP-6,52,4*LABEL_STEP+12);
       ctx.fillStyle=L.color;
-      ctx.strokeStyle=L.color; ctx.lineWidth=2.5; ctx.lineJoin='round';
-      for(var i=0;i<t.length;i++){ ctx.strokeText(t.charAt(i),0,(i-1.5)*LABEL_STEP); ctx.fillText(t.charAt(i),0,(i-1.5)*LABEL_STEP); }
+      for(var i=0;i<t.length;i++) ctx.fillText(t.charAt(i),0,(i-1.5)*LABEL_STEP);
     }else{
       ctx.fillRect(-90,-27,180,54);
       ctx.fillStyle=L.color;
       if('letterSpacing' in ctx) ctx.letterSpacing='2px';
-      ctx.strokeStyle=L.color; ctx.lineWidth=2.5; ctx.lineJoin='round';
-      ctx.strokeText(t,0,0); ctx.fillText(t,0,0);
+      ctx.fillText(t,0,0);
     }
     ctx.restore();
   });
