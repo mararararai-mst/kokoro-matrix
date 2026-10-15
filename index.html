@@ -175,6 +175,7 @@ footer a{color:var(--sub)}
   <section class="stage">
     <svg id="mx" viewBox="0 0 886 886" aria-label="心マトリクス">
       <image href="assets/kokoro-matrix.jpeg" x="0" y="0" width="886" height="886"/>
+      <g id="kana" style="display:none"></g>
       <defs>
         <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10 z" fill="#3fae87"/>
@@ -243,7 +244,7 @@ footer a{color:var(--sub)}
     <div id="p-words" class="hidden">
       <div class="card">
         <div class="who"><span class="chip" style="background:var(--accent)"></span><span data-k="自分の言葉で埋める">わたしのことばで うめる</span></div>
-        <p class="stdesc" style="margin:.3em 0 .8em" data-k="「きらきらってどんなとき？」を自分の言葉で書いておくと、ピンを刺したときにその言葉が出てくるよ。">
+        <p class="stdesc" style="margin:.3em 0 .8em" data-k="「キラキラってどんなとき？」を自分の言葉で書いておくと、ピンを刺したときにその言葉が出てくるよ。">
           「きらきらって どんなとき？」を じぶんのことばで書いておくと、ピンをさしたときに その言葉が出てくるよ。
         </p>
         <div class="words-grid" id="wordsGrid"></div>
@@ -318,6 +319,22 @@ var moji=load(LS_MOJI,'h');
 })();
 function T(h,k){ return moji==='k'?k:h; }
 function stDesc(st){ return T(st.desc, st.descK||st.desc); }
+function kata(t){ return t.replace(/[ぁ-ゖ]/g,function(c){ return String.fromCharCode(c.charCodeAt(0)+0x60); }); }
+function stName(st){ return (moji==='k' && st.key!=='center') ? kata(st.name) : st.name; }
+
+/* 図の上の名前（漢字モードでカタカナを重ねる）。原図の位置・色・向きに合わせる */
+var LABELS=[
+  {key:'gungun',  x:444,y:48, rot:0,  color:'#0098E0'},
+  {key:'kirakira',x:712,y:163,rot:45, color:'#F5C400'},
+  {key:'nikoniko',x:835,y:441,rot:0,  color:'#F8904F', v:true},
+  {key:'fuwafuwa',x:720,y:715,rot:-45,color:'#6CCB5F'},
+  {key:'daradara',x:444,y:832,rot:0,  color:'#A0A0A0'},
+  {key:'dorodoro',x:168,y:712,rot:45, color:'#8850F0'},
+  {key:'moyamoya',x:50, y:441,rot:0,  color:'#8F5F38', v:true},
+  {key:'iraira',  x:165,y:165,rot:-45,color:'#F86880'}
+];
+var LABEL_FS=40, LABEL_STEP=42;
+function labelText(k){ for(var i=0;i<STATES.length;i++) if(STATES[i].key===k) return kata(STATES[i].name); return ''; }
 
 var MODE_PINS={ solo:['now','next'], pair:['a','b'], words:[] };
 var mode='solo';
@@ -381,7 +398,7 @@ function fillCard(pinKey){
   var nameEl=card.querySelector('[data-name]'), descEl=card.querySelector('[data-desc]'), mineEl=card.querySelector('[data-mine]');
   if(!p.placed){ return; }
   var st=stateAt(p.x,p.y);
-  nameEl.textContent=st.name;
+  nameEl.textContent=stName(st);
   nameEl.classList.remove('empty');
   nameEl.style.color=st.color;
   descEl.textContent=stDesc(st);
@@ -500,11 +517,12 @@ bindName('nm-a','a','a');
 bindName('nm-b','b','b');
 
 /* ===== わたしのことば ===== */
-var grid=document.getElementById('wordsGrid');
+var grid=document.getElementById('wordsGrid'), wordNames=[];
 STATES.concat([CENTER]).forEach(function(st){
   var row=document.createElement('div'); row.className='words-row';
   var nm=document.createElement('div'); nm.className='nm';
-  nm.innerHTML='<span class="chip" style="background:'+st.color+'"></span>'+st.name;
+  nm.innerHTML='<span class="chip" style="background:'+st.color+'"></span><span class="nmt"></span>';
+  wordNames.push({el:nm.querySelector('.nmt'),st:st});
   var inp=document.createElement('input');
   inp.type='text'; inp.placeholder='どんなとき？';
   inp.value=myWords[st.key]||'';
@@ -557,17 +575,17 @@ function textLines(){
       if(!p.placed) return;
       var st=stateAt(p.x,p.y);
       var ev=document.getElementById(pair[1]).value.trim();
-      out.push('● '+p.label+'：'+st.name+(ev?'（'+ev+'）':''));
+      out.push('● '+p.label+'：'+stName(st)+(ev?'（'+ev+'）':''));
     });
   }else{
     if(PINS.now.placed){
       var st1=stateAt(PINS.now.x,PINS.now.y);
       var ev1=document.getElementById('ev-now').value.trim();
-      out.push('● '+T('いま','今')+'：'+st1.name+(ev1?'（'+ev1+'）':''));
+      out.push('● '+T('いま','今')+'：'+stName(st1)+(ev1?'（'+ev1+'）':''));
     }
     if(PINS.next.placed){
       var st2=stateAt(PINS.next.x,PINS.next.y);
-      out.push('● '+T('つぎ','次')+'：'+st2.name+' へ');
+      out.push('● '+T('つぎ','次')+'：'+stName(st2)+' へ');
     }
     var stp=document.getElementById('ev-step').value.trim();
     if(stp) out.push('● まずやること：'+stp);
@@ -619,6 +637,7 @@ function renderCanvas(){
       ctx.font='400 24px "Zen Maru Gothic", sans-serif'; ctx.fillStyle='#8b7d70';
       ctx.fillText(today(),W/2,head/2+28);
       ctx.drawImage(img,0,head,W,W);
+      if(moji==='k') drawKanaCanvas(ctx,head);
       if(mode==='solo' && PINS.now.placed && PINS.next.placed){
         var x1=PINS.now.x,y1=PINS.now.y+head,x2=PINS.next.x,y2=PINS.next.y+head;
         var dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
@@ -680,6 +699,49 @@ function copyText(){
   } else toast('コピーできなかった…');
 }
 
+/* ===== 図の名前（カタカナ） ===== */
+var gKana=document.getElementById('kana');
+LABELS.forEach(function(L){
+  var t=labelText(L.key);
+  var g=el('g',{transform:'translate('+L.x+' '+L.y+') rotate('+L.rot+')'});
+  if(L.v){
+    g.appendChild(el('rect',{x:'-26',y:String(-2*LABEL_STEP-6),width:'52',height:String(4*LABEL_STEP+12),rx:'10',fill:'#fff'}));
+    for(var i=0;i<t.length;i++){
+      var tv=el('text',{x:'0',y:String((i-1.5)*LABEL_STEP),'text-anchor':'middle','dominant-baseline':'central','font-size':String(LABEL_FS),'font-weight':'700',fill:L.color,stroke:L.color,'stroke-width':'2.5','stroke-linejoin':'round','font-family':'"Zen Maru Gothic",sans-serif'});
+      tv.textContent=t.charAt(i); g.appendChild(tv);
+    }
+  }else{
+    g.appendChild(el('rect',{x:'-90',y:'-27',width:'180',height:'54',rx:'10',fill:'#fff'}));
+    var th=el('text',{x:'0',y:'0','text-anchor':'middle','dominant-baseline':'central','font-size':String(LABEL_FS),'font-weight':'700',fill:L.color,stroke:L.color,'stroke-width':'2.5','stroke-linejoin':'round','letter-spacing':'2','font-family':'"Zen Maru Gothic",sans-serif'});
+    th.textContent=t; g.appendChild(th);
+  }
+  gKana.appendChild(g);
+});
+function drawKanaCanvas(ctx,oy){
+  ctx.save();
+  ctx.font='700 '+LABEL_FS+'px "Zen Maru Gothic", sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  LABELS.forEach(function(L){
+    var t=labelText(L.key);
+    ctx.save(); ctx.translate(L.x,L.y+oy); ctx.rotate(L.rot*Math.PI/180);
+    ctx.fillStyle='#fff';
+    if(L.v){
+      ctx.fillRect(-26,-2*LABEL_STEP-6,52,4*LABEL_STEP+12);
+      ctx.fillStyle=L.color;
+      ctx.strokeStyle=L.color; ctx.lineWidth=2.5; ctx.lineJoin='round';
+      for(var i=0;i<t.length;i++){ ctx.strokeText(t.charAt(i),0,(i-1.5)*LABEL_STEP); ctx.fillText(t.charAt(i),0,(i-1.5)*LABEL_STEP); }
+    }else{
+      ctx.fillRect(-90,-27,180,54);
+      ctx.fillStyle=L.color;
+      if('letterSpacing' in ctx) ctx.letterSpacing='2px';
+      ctx.strokeStyle=L.color; ctx.lineWidth=2.5; ctx.lineJoin='round';
+      ctx.strokeText(t,0,0); ctx.fillText(t,0,0);
+    }
+    ctx.restore();
+  });
+  ctx.restore();
+}
+
 /* ===== 文字の切替 ===== */
 var kEls=document.querySelectorAll('[data-k]'), kpEls=document.querySelectorAll('[data-kp]');
 Array.prototype.forEach.call(kEls,function(e){ e.dataset.h=e.innerHTML; });
@@ -693,6 +755,8 @@ function applyMoji(){
   });
   rubyBtn.classList.toggle('hidden', isK);
   document.body.classList.toggle('no-ruby', isK || !rubyOn);
+  gKana.style.display=isK?'':'none';
+  wordNames.forEach(function(w){ w.el.textContent=stName(w.st); });
   setPinLabel(PINS.now, T('いま','今'));
   setPinLabel(PINS.next, T('つぎ','次'));
   ['now','next','a','b'].forEach(function(k){ if(PINS[k].placed) fillCard(k); else emptyCard(k); });
