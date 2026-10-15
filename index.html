@@ -65,6 +65,12 @@ h1 .dot{color:var(--now)}
   border:2px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;
 }
 .toggle[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:999px;background:#fff;overflow:hidden}
+.seg button{
+  font-family:inherit;font-size:.78rem;padding:.42em .85em;border:0;background:transparent;
+  color:var(--sub);cursor:pointer;
+}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:700}
 
 main{
   max-width:1080px;margin:0 auto;padding:8px 14px 28px;
@@ -150,15 +156,18 @@ footer a{color:var(--sub)}
 <body>
 
 <header>
-  <h1><span class="dot">📍</span> <ruby>心<rt>こころ</rt></ruby>マトリクス ふりかえり</h1>
-  <p class="lead">いま、どこ？ そして、つぎはどこへ行きたい？</p>
-  <span class="creed">わるい<ruby>場所<rt>ばしょ</rt></ruby>は ひとつもない。いまどこにいるか わかればいい。</span>
+  <h1><span class="dot">📍</span> <ruby>心<rt>しん</rt></ruby>マトリクス ふりかえり</h1>
+  <p class="lead" data-k="今、どこ？ そして、次はどこへ行きたい？">いま、どこ？ そして、つぎはどこへ行きたい？</p>
+  <span class="creed" data-k="悪い場所は一つもない。今どこにいるか分かればいい。">わるい<ruby>場所<rt>ばしょ</rt></ruby>は ひとつもない。いまどこにいるか わかればいい。</span>
 </header>
 
 <div class="bar" role="tablist">
-  <button class="tab" role="tab" id="tab-solo"  aria-selected="true"  data-mode="solo">ふりかえり</button>
-  <button class="tab" role="tab" id="tab-pair"  aria-selected="false" data-mode="pair">ふたりで</button>
-  <button class="tab" role="tab" id="tab-words" aria-selected="false" data-mode="words">わたしのことば</button>
+  <button class="tab" role="tab" id="tab-solo"  aria-selected="true"  data-mode="solo" data-k="振り返り">ふりかえり</button>
+  <button class="tab" role="tab" id="tab-pair"  aria-selected="false" data-mode="pair" data-k="二人で">ふたりで</button>
+  <button class="tab" role="tab" id="tab-words" aria-selected="false" data-mode="words" data-k="自分の言葉">わたしのことば</button>
+  <span class="seg" role="group" aria-label="文字">
+    <button type="button" data-moji="h" aria-pressed="true">ひらがな</button><button type="button" data-moji="k" aria-pressed="false">漢字</button>
+  </span>
   <button class="toggle" id="rubyBtn" aria-pressed="true">ふりがな</button>
 </div>
 
@@ -182,24 +191,24 @@ footer a{color:var(--sub)}
     <!-- ふりかえり -->
     <div id="p-solo">
       <div class="card now" id="c-now">
-        <div class="who"><span class="chip"></span>いまの<ruby>心<rt>こころ</rt></ruby></div>
-        <p class="stname empty" data-name>まだ さしてないよ</p>
-        <p class="stdesc" data-desc>図をタップして、いまの心の場所にピンをさそう。</p>
+        <div class="who"><span class="chip"></span><span data-k="今の心">いまの<ruby>心<rt>こころ</rt></ruby></span></div>
+        <p class="stname empty" data-name></p>
+        <p class="stdesc" data-desc></p>
         <div data-mine></div>
-        <label class="f" for="ev-now">なにがあって、そうなった？</label>
-        <input type="text" id="ev-now" placeholder="れい：さんすうのテストがむずかしかった">
+        <label class="f" for="ev-now" data-k="何があって、そうなった？">なにがあって、そうなった？</label>
+        <input type="text" id="ev-now" placeholder="れい：さんすうのテストがむずかしかった" data-kp="例：理科の小テストが難しかった">
       </div>
 
       <div class="card next" id="c-next">
-        <div class="who"><span class="chip"></span>つぎ 行きたいところ</div>
-        <p class="stname empty" data-name>まだ さしてないよ</p>
-        <p class="stdesc" data-desc>「いま」をさしたら、つぎに行きたい場所をさそう。</p>
+        <div class="who"><span class="chip"></span><span data-k="次に行きたいところ">つぎ 行きたいところ</span></div>
+        <p class="stname empty" data-name></p>
+        <p class="stdesc" data-desc></p>
         <div data-mine></div>
       </div>
 
       <div class="step">
-        <label class="f" for="ev-step">つぎに行くために、まず やること</label>
-        <input type="text" id="ev-step" placeholder="れい：わからんとこを１つだけ聞いてみる">
+        <label class="f" for="ev-step" data-k="次に行くために、まずやること">つぎに行くために、まず やること</label>
+        <input type="text" id="ev-step" placeholder="れい：わからんとこを１つだけ聞いてみる" data-kp="例：分からないところを一つだけ聞いてみる">
       </div>
     </div>
 
@@ -208,33 +217,33 @@ footer a{color:var(--sub)}
       <div class="card pa" id="c-a">
         <div class="who"><span class="chip"></span>
           <input type="text" class="name-in" id="nm-a" value="ぼく" maxlength="6" aria-label="ひとりめの名前">
-          の いま
+          <span data-k="の今">の いま</span>
         </div>
-        <p class="stname empty" data-name>まだ さしてないよ</p>
-        <p class="stdesc" data-desc>ふたりとも、自分で自分の心をさそう。</p>
+        <p class="stname empty" data-name></p>
+        <p class="stdesc" data-desc></p>
         <div data-mine></div>
-        <label class="f" for="ev-a">なにがあって、そうなった？</label>
-        <input type="text" id="ev-a" placeholder="れい：サッカーでゴールきめた">
+        <label class="f" for="ev-a" data-k="何があって、そうなった？">なにがあって、そうなった？</label>
+        <input type="text" id="ev-a" placeholder="れい：サッカーでゴールきめた" data-kp="例：部活の試合で勝った">
       </div>
 
       <div class="card pb" id="c-b">
         <div class="who"><span class="chip"></span>
           <input type="text" class="name-in" id="nm-b" value="おとうさん" maxlength="6" aria-label="ふたりめの名前">
-          の いま
+          <span data-k="の今">の いま</span>
         </div>
-        <p class="stname empty" data-name>まだ さしてないよ</p>
-        <p class="stdesc" data-desc>あいての心を きめつけないで、じぶんの心をさす。</p>
+        <p class="stname empty" data-name></p>
+        <p class="stdesc" data-desc></p>
         <div data-mine></div>
-        <label class="f" for="ev-b">なにがあって、そうなった？</label>
-        <input type="text" id="ev-b" placeholder="れい：しごとが立てこんでいた">
+        <label class="f" for="ev-b" data-k="何があって、そうなった？">なにがあって、そうなった？</label>
+        <input type="text" id="ev-b" placeholder="れい：しごとが立てこんでいた" data-kp="例：仕事が立て込んでいた">
       </div>
     </div>
 
     <!-- わたしのことば -->
     <div id="p-words" class="hidden">
       <div class="card">
-        <div class="who"><span class="chip" style="background:var(--accent)"></span>わたしのことばで うめる</div>
-        <p class="stdesc" style="margin:.3em 0 .8em">
+        <div class="who"><span class="chip" style="background:var(--accent)"></span><span data-k="自分の言葉で埋める">わたしのことばで うめる</span></div>
+        <p class="stdesc" style="margin:.3em 0 .8em" data-k="「きらきらってどんなとき？」を自分の言葉で書いておくと、ピンを刺したときにその言葉が出てくるよ。">
           「きらきらって どんなとき？」を じぶんのことばで書いておくと、ピンをさしたときに その言葉が出てくるよ。
         </p>
         <div class="words-grid" id="wordsGrid"></div>
@@ -242,9 +251,9 @@ footer a{color:var(--sub)}
     </div>
 
     <div class="acts">
-      <button class="btn" id="btnReset">さいしょから</button>
+      <button class="btn" id="btnReset" data-k="最初から">さいしょから</button>
       <button class="btn" id="btnCopy">コピー</button>
-      <button class="btn primary" id="btnSave">画像でほぞん</button>
+      <button class="btn primary" id="btnSave" data-k="画像で保存">画像でほぞん</button>
     </div>
   </section>
 </main>
@@ -263,16 +272,16 @@ footer a{color:var(--sub)}
 /* ===== 状態の定義（原図の８方向） ===== */
 var W=886, C=443, MAXR=395;
 var STATES=[
-  {key:'nikoniko',a:0,   name:'にこにこ', color:'#EF9A4E', desc:'「しんじる」×「おもいやる」。あったかい心。まわりまで明るくなる。'},
-  {key:'kirakira',a:45,  name:'きらきら', color:'#D9A400', desc:'「やってみる」×「おもいやる」。考えて動けてる。かがやいてるね。'},
-  {key:'gungun',  a:90,  name:'ぐんぐん', color:'#3F9CD0', desc:'「考える」×「やってみる」。学びがどんどん すすむゾーン。'},
-  {key:'iraira',  a:135, name:'いらいら', color:'#E8544E', desc:'動きたいのに「自分ばかり」に かたむき中。ふーっと 息をはこう。'},
-  {key:'moyamoya',a:180, name:'もやもや', color:'#7D5A4F', desc:'「うたがう」×「自分ばかり」。すっきりしない。なにが いやか ことばにしてみよう。'},
-  {key:'dorodoro',a:-135,name:'どろどろ', color:'#7E57C2', desc:'心が うずまいている。ひとりで かかえこまないで、話してみよう。'},
-  {key:'daradara',a:-90, name:'だらだら', color:'#8D8D8D', desc:'「考えない」×「やらされる」。エンジンが 止まっている。小さな一歩から。'},
-  {key:'fuwafuwa',a:-45, name:'ふわふわ', color:'#43A047', desc:'気もちいいけど、ながされぎみ。その楽しさを 学びに つなげよう。'}
+  {key:'nikoniko',a:0,   name:'にこにこ', color:'#EF9A4E', desc:'「しんじる」×「おもいやる」。あったかい心。まわりまで明るくなる。', descK:'「信じる」×「思いやる」。温かい心。周りまで明るくなる。'},
+  {key:'kirakira',a:45,  name:'きらきら', color:'#D9A400', desc:'「やってみる」×「おもいやる」。考えて動けてる。かがやいてるね。', descK:'「やってみる」×「思いやる」。考えて動けている。輝いているね。'},
+  {key:'gungun',  a:90,  name:'ぐんぐん', color:'#3F9CD0', desc:'「考える」×「やってみる」。学びがどんどん すすむゾーン。', descK:'「考える」×「やってみる」。学びがどんどん進むゾーン。'},
+  {key:'iraira',  a:135, name:'いらいら', color:'#E8544E', desc:'動きたいのに「自分ばかり」に かたむき中。ふーっと 息をはこう。', descK:'動きたいのに「自分ばかり」に傾き中。ふーっと息を吐こう。'},
+  {key:'moyamoya',a:180, name:'もやもや', color:'#7D5A4F', desc:'「うたがう」×「自分ばかり」。すっきりしない。なにが いやか ことばにしてみよう。', descK:'「疑う」×「自分ばかり」。すっきりしない。何が嫌なのか言葉にしてみよう。'},
+  {key:'dorodoro',a:-135,name:'どろどろ', color:'#7E57C2', desc:'心が うずまいている。ひとりで かかえこまないで、話してみよう。', descK:'心が渦巻いている。一人で抱え込まないで、話してみよう。'},
+  {key:'daradara',a:-90, name:'だらだら', color:'#8D8D8D', desc:'「考えない」×「やらされる」。エンジンが 止まっている。小さな一歩から。', descK:'「考えない」×「やらされる」。エンジンが止まっている。小さな一歩から。'},
+  {key:'fuwafuwa',a:-45, name:'ふわふわ', color:'#43A047', desc:'気もちいいけど、ながされぎみ。その楽しさを 学びに つなげよう。', descK:'気持ちいいけど、流されぎみ。その楽しさを学びにつなげよう。'}
 ];
-var CENTER={key:'center',name:'まんなか',color:'#4E9E7E',desc:'心は いつも動くもの。ここから どっちへ 動く？'};
+var CENTER={key:'center',name:'まんなか',color:'#4E9E7E',desc:'心は いつも動くもの。ここから どっちへ 動く？', descK:'心はいつも動くもの。ここからどっちへ動く？'};
 
 function stateAt(x,y){
   var dx=x-C, dy=-(y-C), d=Math.sqrt(dx*dx+dy*dy);
@@ -299,6 +308,17 @@ var PINS={
   a:   {id:'a',   label:myNames.a, color:'#EF6F9B', card:'c-a', placed:false, x:0, y:0},
   b:   {id:'b',   label:myNames.b, color:'#4A90D9', card:'c-b', placed:false, x:0, y:0}
 };
+/* ===== 文字（ひらがな／漢字） ===== */
+var LS_MOJI='kokoro-matrix-moji-v1';
+var moji=load(LS_MOJI,'h');
+(function(){
+  var q=(location.search.match(/[?&]moji=([^&]+)/)||[])[1];
+  if(q==='kanji'||q==='k'){ moji='k'; save(LS_MOJI,moji); }
+  else if(q==='hira'||q==='h'){ moji='h'; save(LS_MOJI,moji); }
+})();
+function T(h,k){ return moji==='k'?k:h; }
+function stDesc(st){ return T(st.desc, st.descK||st.desc); }
+
 var MODE_PINS={ solo:['now','next'], pair:['a','b'], words:[] };
 var mode='solo';
 
@@ -364,26 +384,26 @@ function fillCard(pinKey){
   nameEl.textContent=st.name;
   nameEl.classList.remove('empty');
   nameEl.style.color=st.color;
-  descEl.textContent=st.desc;
+  descEl.textContent=stDesc(st);
   var mine=myWords[st.key];
   if(mine && mine.trim()){
-    mineEl.innerHTML='<div class="mine"><span class="tag">わたしのことば</span>'+esc(mine)+'</div>';
+    mineEl.innerHTML='<div class="mine"><span class="tag">'+T('わたしのことば','自分の言葉')+'</span>'+esc(mine)+'</div>';
   } else mineEl.innerHTML='';
 }
 function esc(s){ return String(s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
 function updateHint(){
-  if(mode==='words'){ hint.innerHTML='８つの場所を じぶんのことばで うめてみよう。'; return; }
+  if(mode==='words'){ hint.innerHTML=T('８つの場所を じぶんのことばで うめてみよう。','８つの場所を自分の言葉で埋めてみよう。'); return; }
   var keys=MODE_PINS[mode];
   var k=nextTarget();
   if(mode==='solo'){
-    if(k==='now') hint.innerHTML='まず <b>いまの心</b> の場所を タップ。';
-    else if(k==='next') hint.innerHTML='つぎは <b>行きたい場所</b> を タップ。';
-    else hint.innerHTML='ピンは あとから ドラッグで 動かせるよ。';
+    if(k==='now') hint.innerHTML=T('まず <b>いまの心</b> の場所を タップ。','まず<b>今の心</b>の場所をタップ。');
+    else if(k==='next') hint.innerHTML=T('つぎは <b>行きたい場所</b> を タップ。','次は<b>行きたい場所</b>をタップ。');
+    else hint.innerHTML=T('ピンは あとから ドラッグで 動かせるよ。','ピンは後からドラッグで動かせるよ。');
   }else{
-    if(k==='a') hint.innerHTML='<b>'+esc(PINS.a.label)+'</b> が じぶんの心を タップ。';
-    else if(k==='b') hint.innerHTML='つぎは <b>'+esc(PINS.b.label)+'</b> の ばん。';
-    else hint.innerHTML='ふたりの ズレを 見ながら 話してみよう。';
+    if(k==='a') hint.innerHTML='<b>'+esc(PINS.a.label)+'</b>'+T(' が じぶんの心を タップ。','が自分の心をタップ。');
+    else if(k==='b') hint.innerHTML=T('つぎは ','次は')+'<b>'+esc(PINS.b.label)+'</b>'+T(' の ばん。','の番。');
+    else hint.innerHTML=T('ふたりの ズレを 見ながら 話してみよう。','二人のズレを見ながら話してみよう。');
   }
 }
 function nextTarget(){
@@ -457,7 +477,7 @@ Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(t){
 var rubyBtn=document.getElementById('rubyBtn');
 var rubyOn=load(LS_RUBY,true);
 function applyRuby(){
-  document.body.classList.toggle('no-ruby', !rubyOn);
+  document.body.classList.toggle('no-ruby', moji==='k' || !rubyOn);
   rubyBtn.setAttribute('aria-pressed', String(rubyOn));
 }
 rubyBtn.addEventListener('click',function(){ rubyOn=!rubyOn; save(LS_RUBY,rubyOn); applyRuby(); });
@@ -502,21 +522,26 @@ document.getElementById('btnReset').addEventListener('click',function(){
     PINS[k].placed=false;
     var card=document.getElementById(PINS[k].card);
     if(card){
-      var n=card.querySelector('[data-name]'), d=card.querySelector('[data-desc]'), m=card.querySelector('[data-mine]');
-      n.textContent='まだ さしてないよ'; n.classList.add('empty'); n.style.color='';
-      d.textContent=(k==='now')?'図をタップして、いまの心の場所にピンをさそう。'
-                  :(k==='next')?'「いま」をさしたら、つぎに行きたい場所をさそう。'
-                  :(k==='a')?'ふたりとも、自分で自分の心をさそう。'
-                  :'あいての心を きめつけないで、じぶんの心をさす。';
-      m.innerHTML='';
+      emptyCard(k);
     }
   });
   ['ev-now','ev-step','ev-a','ev-b'].forEach(function(id){
     var e=document.getElementById(id);
     if(e && (mode==='words' || isFieldOfMode(id))) e.value='';
   });
-  drawPins(); updateHint(); toast('まっさらに もどしたよ');
+  drawPins(); updateHint(); toast(T('まっさらに もどしたよ','最初に戻したよ'));
 });
+function emptyCard(k){
+  var card=document.getElementById(PINS[k].card);
+  if(!card) return;
+  var n=card.querySelector('[data-name]'), d=card.querySelector('[data-desc]'), m=card.querySelector('[data-mine]');
+  n.textContent=T('まだ さしてないよ','まだ刺していないよ'); n.classList.add('empty'); n.style.color='';
+  d.textContent=(k==='now')?T('図をタップして、いまの心の場所にピンをさそう。','図をタップして、今の心の場所にピンを刺そう。')
+              :(k==='next')?T('「いま」をさしたら、つぎに行きたい場所をさそう。','「今」を刺したら、次に行きたい場所を刺そう。')
+              :(k==='a')?T('ふたりとも、自分で自分の心をさそう。','二人とも、自分で自分の心を刺そう。')
+              :T('あいての心を きめつけないで、じぶんの心をさす。','相手の心を決めつけないで、自分の心を刺す。');
+  m.innerHTML='';
+}
 function isFieldOfMode(id){
   if(mode==='solo') return id==='ev-now'||id==='ev-step';
   if(mode==='pair') return id==='ev-a'||id==='ev-b';
@@ -538,11 +563,11 @@ function textLines(){
     if(PINS.now.placed){
       var st1=stateAt(PINS.now.x,PINS.now.y);
       var ev1=document.getElementById('ev-now').value.trim();
-      out.push('● いま：'+st1.name+(ev1?'（'+ev1+'）':''));
+      out.push('● '+T('いま','今')+'：'+st1.name+(ev1?'（'+ev1+'）':''));
     }
     if(PINS.next.placed){
       var st2=stateAt(PINS.next.x,PINS.next.y);
-      out.push('● つぎ：'+st2.name+' へ');
+      out.push('● '+T('つぎ','次')+'：'+st2.name+' へ');
     }
     var stp=document.getElementById('ev-step').value.trim();
     if(stp) out.push('● まずやること：'+stp);
@@ -623,7 +648,7 @@ function toast(msg){
   clearTimeout(toastT); toastT=setTimeout(function(){ toastEl.classList.remove('on'); },1900);
 }
 document.getElementById('btnSave').addEventListener('click',function(){
-  if(mode==='words'){ toast('「ふりかえり」か「ふたりで」で つかってね'); return; }
+  if(mode==='words'){ toast(T('「ふりかえり」か「ふたりで」で つかってね','「振り返り」か「二人で」で使ってね')); return; }
   renderCanvas().then(function(cv){
     cv.toBlob(function(blob){
       var a=document.createElement('a');
@@ -631,17 +656,17 @@ document.getElementById('btnSave').addEventListener('click',function(){
       a.download='心マトリクス_'+today()+'.png';
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       setTimeout(function(){ URL.revokeObjectURL(a.href); },3000);
-      toast('画像を ほぞんしたよ');
+      toast(T('画像を ほぞんしたよ','画像を保存したよ'));
     },'image/png');
-  }).catch(function(){ toast('ほぞんできなかった…'); });
+  }).catch(function(){ toast(T('ほぞんできなかった…','保存できなかった…')); });
 });
 document.getElementById('btnCopy').addEventListener('click',function(){
-  if(mode==='words'){ toast('「ふりかえり」か「ふたりで」で つかってね'); return; }
+  if(mode==='words'){ toast(T('「ふりかえり」か「ふたりで」で つかってね','「振り返り」か「二人で」で使ってね')); return; }
   renderCanvas().then(function(cv){
     cv.toBlob(function(blob){
       if(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write){
         navigator.clipboard.write([new ClipboardItem({'image/png':blob})])
-          .then(function(){ toast('画像を コピーしたよ'); })
+          .then(function(){ toast(T('画像を コピーしたよ','画像をコピーしたよ')); })
           .catch(function(){ copyText(); });
       } else copyText();
     },'image/png');
@@ -650,13 +675,36 @@ document.getElementById('btnCopy').addEventListener('click',function(){
 function copyText(){
   var t='心マトリクス ふりかえり（'+today()+'）\n'+textLines().join('\n');
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(t).then(function(){ toast('文字で コピーしたよ'); })
+    navigator.clipboard.writeText(t).then(function(){ toast(T('文字で コピーしたよ','文字でコピーしたよ')); })
       .catch(function(){ toast('コピーできなかった…'); });
   } else toast('コピーできなかった…');
 }
 
+/* ===== 文字の切替 ===== */
+var kEls=document.querySelectorAll('[data-k]'), kpEls=document.querySelectorAll('[data-kp]');
+Array.prototype.forEach.call(kEls,function(e){ e.dataset.h=e.innerHTML; });
+Array.prototype.forEach.call(kpEls,function(e){ e.dataset.hp=e.placeholder; });
+function applyMoji(){
+  var isK=(moji==='k');
+  Array.prototype.forEach.call(kEls,function(e){ e.innerHTML=isK?e.dataset.k:e.dataset.h; });
+  Array.prototype.forEach.call(kpEls,function(e){ e.placeholder=isK?e.dataset.kp:e.dataset.hp; });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-moji]'),function(b){
+    b.setAttribute('aria-pressed', String(b.dataset.moji===moji));
+  });
+  rubyBtn.classList.toggle('hidden', isK);
+  document.body.classList.toggle('no-ruby', isK || !rubyOn);
+  setPinLabel(PINS.now, T('いま','今'));
+  setPinLabel(PINS.next, T('つぎ','次'));
+  ['now','next','a','b'].forEach(function(k){ if(PINS[k].placed) fillCard(k); else emptyCard(k); });
+  updateHint();
+}
+Array.prototype.forEach.call(document.querySelectorAll('[data-moji]'),function(b){
+  b.addEventListener('click',function(){ moji=b.dataset.moji; save(LS_MOJI,moji); applyMoji(); });
+});
+
 /* ===== 起動 ===== */
 setMode('solo');
+applyMoji();
 })();
 </script>
 </body>
